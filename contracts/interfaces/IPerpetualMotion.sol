@@ -33,4 +33,23 @@ interface IPerpetualMotion {
         string description,
         uint256 fundingGoal
     );
+
+    event ContributionUpdated(
+        uint256 indexed projectId,
+        uint256 contribution,
+        address indexed contributor,
+        address token
+    );
+
+    event Executed(
+        uint256[] projectIds,
+        address[][] contributers,
+        bytes[][] roundUpDatas
+    );
+
+    event PledgeCreated(
+        uint256 projectId,
+        Strategies strategy,
+        bytes strategyData
+    );
 }
