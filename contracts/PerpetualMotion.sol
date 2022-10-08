@@ -43,7 +43,7 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
     function pledge(
         uint256 _projectId,
         Strategies _strategy,
-        address token,
+        address token, // only used for lumpsum
         bytes memory _strategyData
     ) external {
         if (_strategy == Strategies.PeriodicLumpSum) {
@@ -71,6 +71,7 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
             contributerStrategy.strategyType = Strategies.Roundup;
             contributerStrategy.strategyData = _strategyData;
         }
+        emit PledgeCreated(_projectId, _strategy, _strategyData);
     }
 
     function execute(
@@ -101,6 +102,7 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
                 }
             }
         }
+        emit Executed(_projectIds, _contributers, _roundUpDatas);
     }
 
     function roundUp(
@@ -166,5 +168,11 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
         projects[_projectId].amountFunded += _contribution;
         projectToContributors[_projectId][_contributor]
             .totalDonated = _contribution;
+        emit ContributionUpdated(
+            _projectId,
+            _contribution,
+            _contributor,
+            _token
+        );
     }
 }
