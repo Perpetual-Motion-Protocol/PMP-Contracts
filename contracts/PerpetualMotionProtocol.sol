@@ -3,6 +3,7 @@ pragma solidity ^0.8.9;
 
 import "./interfaces/IPerpetualMotion.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "hardhat/console.sol";
 
 /// @title Perpetual Motion Protocol
 /// @author chris, danceratopz
@@ -23,6 +24,7 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
         string memory name,
         string memory description,
         address fundingAddress,
+        address fundingToken,
         uint256 fundingGoal,
         uint256 duration
     ) external {
@@ -31,6 +33,7 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
             description: description,
             fundingAddress: fundingAddress,
             fundingGoal: fundingGoal,
+            fundingToken: fundingToken,
             amountFunded: 0,
             startTime: block.timestamp,
             endTime: block.timestamp + duration,
@@ -43,12 +46,16 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
     function pledge(
         uint256 _projectId,
         Strategies _strategy,
-        address token, // only used for lumpsum
         bytes memory _strategyData
     ) external {
         if (_strategy == Strategies.PeriodicLumpSum) {
             uint256 contribution = abi.decode(_strategyData, (uint256));
-            lumpSum(_projectId, contribution, msg.sender, token);
+            lumpSum(
+                _projectId,
+                contribution,
+                msg.sender,
+                projects[_projectId].fundingToken
+            );
         } else if (_strategy == Strategies.NoStrategy) {
             ContributerStrategy
                 storage contributerStrategy = projectToContributors[_projectId][
@@ -63,6 +70,7 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
                 ];
             contributerStrategy.strategyType = Strategies.Stream;
             contributerStrategy.strategyData = _strategyData;
+            contributerStrategy.prevDonation = block.timestamp;
         } else if (_strategy == Strategies.Roundup) {
             ContributerStrategy
                 storage contributerStrategy = projectToContributors[_projectId][
@@ -80,7 +88,7 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
         bytes[][] memory _roundUpDatas
     ) external {
         for (uint256 i; i < _projectIds.length; i++) {
-            for (uint256 j; j < _contributers[i].length; i++) {
+            for (uint256 j; j < _contributers[i].length; j++) {
                 Strategies strategy = projectToContributors[_projectIds[i]][
                     _contributers[i][j]
                 ].strategyType;
@@ -100,6 +108,16 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
                         contribution
                     );
                 }
+                if (
+                    projects[_projectIds[i]].amountFunded >=
+                    projects[_projectIds[i]].fundingGoal
+                ) {
+                    IERC20(projects[_projectIds[i]].fundingToken).safeTransfer(
+                        projects[_projectIds[i]].fundingAddress,
+                        projects[_projectIds[i]].amountFunded
+                    );
+                    break;
+                }
             }
         }
         emit Executed(_projectIds, _contributers, _roundUpDatas);
@@ -111,38 +129,35 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
         bytes memory txHash,
         uint256 contribution
     ) internal {
-        bytes memory data = projectToContributors[_projectId][msg.sender]
-            .strategyData;
         require(!txHashes[txHash], "Hash already used");
         txHashes[txHash] = true;
-        address token = abi.decode(data, (address));
-        _updateContributions(_projectId, contribution, _contributor, token);
+        _updateContributions(
+            _projectId,
+            contribution,
+            _contributor,
+            projects[_projectId].fundingToken
+        );
     }
 
     function stream(uint256 _projectId, address _contributor) internal {
-        bytes memory data = projectToContributors[_projectId][msg.sender]
+        bytes memory data = projectToContributors[_projectId][_contributor]
             .strategyData;
-        (uint256 contribution, uint256 frequency, address token) = abi.decode(
+        (uint256 contribution, uint256 frequency) = abi.decode(
             data,
-            (uint256, uint256, address)
+            (uint256, uint256)
         );
+        uint256 prevDonation = projectToContributors[_projectId][_contributor]
+            .prevDonation;
 
-        uint256 totalContribution = (contribution *
-            (block.timestamp -
-                projectToContributors[_projectId][msg.sender].prevDonation)) /
-            frequency;
+        uint256 totalContribution = contribution * ((block.timestamp - prevDonation) / frequency);
 
-        require(
-            block.timestamp >= block.timestamp + frequency,
-            "User has already donated"
-        );
         projectToContributors[_projectId][msg.sender].prevDonation = block
             .timestamp;
         _updateContributions(
             _projectId,
             totalContribution,
             _contributor,
-            token
+            projects[_projectId].fundingToken
         );
     }
 
@@ -161,13 +176,15 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
         address _contributor,
         address _token
     ) internal {
-        IERC20(_token).safeTransfer(
-            projects[_projectId].fundingAddress,
+        IERC20(_token).safeTransferFrom(
+            _contributor,
+            address(this),
             _contribution
         );
         projects[_projectId].amountFunded += _contribution;
+        projects[_projectId].contributorAddresses.push(_contributor);
         projectToContributors[_projectId][_contributor]
-            .totalDonated = _contribution;
+            .totalDonated += _contribution;
         emit ContributionUpdated(
             _projectId,
             _contribution,
