@@ -123,6 +123,38 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
         emit Executed(_projectIds, _contributers, _roundUpDatas);
     }
 
+    function returnFundingGoal(uint256 _projectId)
+        public
+        view
+        returns (uint256)
+    {
+        return projects[_projectId].fundingGoal;
+    }
+
+    function returnAmountFunded(uint256 _projectId)
+        public
+        view
+        returns (uint256)
+    {
+        return projects[_projectId].amountFunded;
+    }
+
+    function returnUserDonations(uint256 _projectId, address _contributor)
+        public
+        view
+        returns (uint256)
+    {
+        return projectToContributors[_projectId][_contributor].totalDonated;
+    }
+
+    function returnUserStrategy(uint256 _projectId, address _contributor)
+        public
+        view
+        returns (Strategies)
+    {
+        return projectToContributors[_projectId][_contributor].strategyType;
+    }
+
     function roundUp(
         uint256 _projectId,
         address _contributor,
@@ -149,7 +181,8 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
         uint256 prevDonation = projectToContributors[_projectId][_contributor]
             .prevDonation;
 
-        uint256 totalContribution = contribution * ((block.timestamp - prevDonation) / frequency);
+        uint256 totalContribution = contribution *
+            ((block.timestamp - prevDonation) / frequency);
 
         projectToContributors[_projectId][msg.sender].prevDonation = block
             .timestamp;
