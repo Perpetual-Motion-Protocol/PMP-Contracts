@@ -72,20 +72,34 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
         }
     }
 
+    function execute(
+        uint256[] memory _projectIds,
+        address[][] memory _contributers
+    ) public {
+        for (uint256 i; i < _projectIds.length; i++) {
+            for (uint256 j; j < _contributers[i].length; i++) {
+                Strategies strategy = projectToContributors[_projectIds[i]][
+                    _contributers[i][j]
+                ].strategyType;
+                if (strategy == Strategies.NoStrategy) {
+                    continue;
+                } else if (strategy == Strategies.Stream) {
+                    stream(_projectIds[i], _contributers[i][j]);
+                }
+            }
+        }
+    }
+
     // current time - prevdonation / frequency = how much to contribute
-    // execute 
+    // execute
     // roundup
-    function stream(
-        uint256 _projectId,
-        address _contributor,
-        address _token
-    ) internal {
+    function stream(uint256 _projectId, address _contributor) public {
         // require(projectToContributors[_projectId][msg.sender].strategyType, "Not Strategy Type");
         bytes memory data = projectToContributors[_projectId][msg.sender]
             .strategyData;
-        (uint256 contribution, uint256 frequency) = abi.decode(
+        (uint256 contribution, uint256 frequency, address token) = abi.decode(
             data,
-            (uint256, uint256)
+            (uint256, uint256, address)
         );
 
         require(
@@ -94,7 +108,7 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
         );
         projectToContributors[_projectId][msg.sender].prevDonation = block
             .timestamp;
-        _updateContributions(_projectId, contribution, _contributor, _token);
+        _updateContributions(_projectId, contribution, _contributor, token);
     }
 
     function lumpSum(
