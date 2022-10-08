@@ -72,6 +72,9 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
         }
     }
 
+    // current time - prevdonation / frequency = how much to contribute
+    // execute 
+    // roundup
     function stream(
         uint256 _projectId,
         address _contributor,
