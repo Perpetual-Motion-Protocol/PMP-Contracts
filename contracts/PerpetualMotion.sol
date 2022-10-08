@@ -14,6 +14,7 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
 
     uint256 public projectCounter;
 
+    mapping(bytes => bool) public txHashes;
     mapping(uint256 => mapping(address => ContributerStrategy))
         public projectToContributors;
     mapping(uint256 => Project) public projects;
@@ -42,7 +43,7 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
     function pledge(
         uint256 _projectId,
         Strategies _strategy,
-        address token,
+        address token, // only used for lumpsum
         bytes memory _strategyData
     ) external {
         if (_strategy == Strategies.PeriodicLumpSum) {
@@ -70,12 +71,14 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
             contributerStrategy.strategyType = Strategies.Roundup;
             contributerStrategy.strategyData = _strategyData;
         }
+        emit PledgeCreated(_projectId, _strategy, _strategyData);
     }
 
     function execute(
         uint256[] memory _projectIds,
-        address[][] memory _contributers
-    ) public {
+        address[][] memory _contributers,
+        bytes[][] memory _roundUpDatas
+    ) external {
         for (uint256 i; i < _projectIds.length; i++) {
             for (uint256 j; j < _contributers[i].length; i++) {
                 Strategies strategy = projectToContributors[_projectIds[i]][
@@ -85,16 +88,38 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
                     continue;
                 } else if (strategy == Strategies.Stream) {
                     stream(_projectIds[i], _contributers[i][j]);
+                } else if (strategy == Strategies.Roundup) {
+                    (bytes memory txHash, uint256 contribution) = abi.decode(
+                        _roundUpDatas[i][j],
+                        (bytes, uint256)
+                    );
+                    roundUp(
+                        _projectIds[i],
+                        _contributers[i][j],
+                        txHash,
+                        contribution
+                    );
                 }
             }
         }
+        emit Executed(_projectIds, _contributers, _roundUpDatas);
     }
 
-    // current time - prevdonation / frequency = how much to contribute
-    // execute
-    // roundup
-    function stream(uint256 _projectId, address _contributor) public {
-        // require(projectToContributors[_projectId][msg.sender].strategyType, "Not Strategy Type");
+    function roundUp(
+        uint256 _projectId,
+        address _contributor,
+        bytes memory txHash,
+        uint256 contribution
+    ) internal {
+        bytes memory data = projectToContributors[_projectId][msg.sender]
+            .strategyData;
+        require(!txHashes[txHash], "Hash already used");
+        txHashes[txHash] = true;
+        address token = abi.decode(data, (address));
+        _updateContributions(_projectId, contribution, _contributor, token);
+    }
+
+    function stream(uint256 _projectId, address _contributor) internal {
         bytes memory data = projectToContributors[_projectId][msg.sender]
             .strategyData;
         (uint256 contribution, uint256 frequency, address token) = abi.decode(
@@ -102,13 +127,23 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
             (uint256, uint256, address)
         );
 
+        uint256 totalContribution = (contribution *
+            (block.timestamp -
+                projectToContributors[_projectId][msg.sender].prevDonation)) /
+            frequency;
+
         require(
             block.timestamp >= block.timestamp + frequency,
             "User has already donated"
         );
         projectToContributors[_projectId][msg.sender].prevDonation = block
             .timestamp;
-        _updateContributions(_projectId, contribution, _contributor, token);
+        _updateContributions(
+            _projectId,
+            totalContribution,
+            _contributor,
+            token
+        );
     }
 
     function lumpSum(
@@ -131,7 +166,13 @@ contract PerpetualMotionProtocol is IPerpetualMotion {
             _contribution
         );
         projects[_projectId].amountFunded += _contribution;
-        projectToContributors[_projectId][msg.sender]
+        projectToContributors[_projectId][_contributor]
             .totalDonated = _contribution;
+        emit ContributionUpdated(
+            _projectId,
+            _contribution,
+            _contributor,
+            _token
+        );
     }
 }
