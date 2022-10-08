@@ -27,20 +27,6 @@ interface IPerpetualMotion {
         Roundup
     }
 
-    struct LumpSumStrategy {
-        uint256 amount;
-        uint256 timePeriod;
-    }
-
-    struct StreamStrategy {
-        uint256 amount;
-        uint256 timePeriod;
-    }
-
-    struct RoundUp {
-        address erc20Address;
-    }
-
     event ProjectCreated(
         address indexed fundingAddress,
         string name,
