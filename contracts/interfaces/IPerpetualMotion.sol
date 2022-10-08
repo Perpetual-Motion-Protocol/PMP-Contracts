@@ -6,6 +6,7 @@ interface IPerpetualMotion {
         string name;
         string description;
         address fundingAddress;
+        address fundingToken;
         uint256 fundingGoal;
         uint256 amountFunded;
         uint256 startTime;
