@@ -8,6 +8,7 @@ import "hardhat-deploy";
 import "@typechain/hardhat";
 import "hardhat-tracer";
 import "solidity-coverage";
+import "hardhat-abi-exporter";
 
 dotenv.config();
 
@@ -33,6 +34,12 @@ const config: HardhatUserConfig = {
         runs: 200,
       },
     },
+  },
+  abiExporter: {
+    path: "./data/abi",
+    runOnCompile: true,
+    clear: true,
+    flat: true,
   },
   namedAccounts: {
     deployer: {
