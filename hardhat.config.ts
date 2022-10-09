@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import * as dotenv from "dotenv";
 import { HardhatUserConfig, task } from "hardhat/config";
 import "@nomiclabs/hardhat-etherscan";
@@ -7,6 +8,7 @@ import "hardhat-deploy";
 import "@typechain/hardhat";
 import "hardhat-tracer";
 import "solidity-coverage";
+import "hardhat-abi-exporter";
 
 dotenv.config();
 
@@ -33,15 +35,15 @@ const config: HardhatUserConfig = {
       },
     },
   },
+  abiExporter: {
+    path: "./data/abi",
+    runOnCompile: true,
+    clear: true,
+    flat: true,
+  },
   namedAccounts: {
     deployer: {
       default: 0,
-      mainnet: `privatekey://${process.env.DEPLOYER_PRIVATE_KEY}`,
-      goerli: `privatekey://${process.env.DEPLOYER_PRIVATE_KEY}`,
-      rinkeby: `privatekey://${process.env.DEPLOYER_PRIVATE_KEY}`,
-      polygon_mainnet: `privatekey://${process.env.DEPLOYER_PRIVATE_KEY}`,
-      polygon_mumbai: `privatekey://${process.env.DEPLOYER_PRIVATE_KEY}`,
-      optimism_mainnet: `privatekey://${process.env.DEPLOYER_PRIVATE_KEY}`,
     },
     pledger1: {
       default: 1,
@@ -51,6 +53,8 @@ const config: HardhatUserConfig = {
       polygon_mainnet: `privatekey://${process.env.PLEDGER1_PRIVATE_KEY}`,
       polygon_mumbai: `privatekey://${process.env.PLEDGER1_PRIVATE_KEY}`,
       optimism_mainnet: `privatekey://${process.env.PLEDGER1_PRIVATE_KEY}`,
+      optimism_goerli: `privatekey://${process.env.PLEDGER1_PRIVATE_KEY}`,
+      scroll_testnet: `privatekey://${process.env.PLEDGER1_PRIVATE_KEY}`,
     },
     pledger2: {
       default: 2,
@@ -60,6 +64,8 @@ const config: HardhatUserConfig = {
       polygon_mainnet: `privatekey://${process.env.PLEDGER2_PRIVATE_KEY}`,
       polygon_mumbai: `privatekey://${process.env.PLEDGER2_PRIVATE_KEY}`,
       optimism_mainnet: `privatekey://${process.env.PLEDGER2_PRIVATE_KEY}`,
+      optimism_goerli: `privatekey://${process.env.PLEDGER2_PRIVATE_KEY}`,
+      scroll_testnet: `privatekey://${process.env.PLEDGER2_PRIVATE_KEY}`,
     },
     pledger3: {
       default: 3,
@@ -69,6 +75,8 @@ const config: HardhatUserConfig = {
       polygon_mainnet: `privatekey://${process.env.PLEDGER3_PRIVATE_KEY}`,
       polygon_mumbai: `privatekey://${process.env.PLEDGER3_PRIVATE_KEY}`,
       optimism_mainnet: `privatekey://${process.env.PLEDGER3_PRIVATE_KEY}`,
+      optimism_goerli: `privatekey://${process.env.PLEDGER3_PRIVATE_KEY}`,
+      scroll_testnet: `privatekey://${process.env.PLEDGER3_PRIVATE_KEY}`,
     },
     fundingAddress1: {
       default: 4,
@@ -78,7 +86,9 @@ const config: HardhatUserConfig = {
       polygon_mainnet: `privatekey://${process.env.FUNDINGADDRESS1_PRIVATE_KEY}`,
       polygon_mumbai: `privatekey://${process.env.FUNDINGADDRESS1_PRIVATE_KEY}`,
       optimism_mainnet: `privatekey://${process.env.FUNDINGADDRESS1_PRIVATE_KEY}`,
-    },    
+      optimism_goerli: `privatekey://${process.env.FUNDINGADDRESS1_PRIVATE_KEY}`,
+      scroll_testnet: `privatekey://${process.env.FUNDINGADDRESS1_PRIVATE_KEY}`,
+    },
     fundingAddress2: {
       default: 5,
       mainnet: `privatekey://${process.env.FUNDINGADDRESS2_PRIVATE_KEY}`,
@@ -87,7 +97,9 @@ const config: HardhatUserConfig = {
       polygon_mainnet: `privatekey://${process.env.FUNDINGADDRESS2_PRIVATE_KEY}`,
       polygon_mumbai: `privatekey://${process.env.FUNDINGADDRESS2_PRIVATE_KEY}`,
       optimism_mainnet: `privatekey://${process.env.FUNDINGADDRESS2_PRIVATE_KEY}`,
-    },    
+      optimism_goerli: `privatekey://${process.env.FUNDINGADDRESS2_PRIVATE_KEY}`,
+      scroll_testnet: `privatekey://${process.env.FUNDINGADDRESS2_PRIVATE_KEY}`,
+    },
     fundingAddress3: {
       default: 6,
       mainnet: `privatekey://${process.env.FUNDINGADDRESS3_PRIVATE_KEY}`,
@@ -96,39 +108,65 @@ const config: HardhatUserConfig = {
       polygon_mainnet: `privatekey://${process.env.FUNDINGADDRESS3_PRIVATE_KEY}`,
       polygon_mumbai: `privatekey://${process.env.FUNDINGADDRESS3_PRIVATE_KEY}`,
       optimism_mainnet: `privatekey://${process.env.FUNDINGADDRESS3_PRIVATE_KEY}`,
-    },    
+      optimism_goerli: `privatekey://${process.env.FUNDINGADDRESS3_PRIVATE_KEY}`,
+      scroll_testnet: `privatekey://${process.env.FUNDINGADDRESS3_PRIVATE_KEY}`,
+    },
   },
   networks: {
-    mainnet: {
-      chainId: 1,
-      url: process.env.MAINNET_PROVIDER,
-      accounts: [process.env.DEPLOYER_PRIVATE_KEY || ""],
-    },
-    goerli: {
-      chainId: 5,
-      url: process.env.GOERLI_PROVIDER,
-      accounts: [process.env.DEPLOYER_PRIVATE_KEY || ""],
-    },
-    rinkeby: {
-      chainId: 4,
-      url: process.env.RINKEBY_PROVIDER,
-      accounts: [process.env.DEPLOYER_PRIVATE_KEY || ""],
+    mumbai: {
+      chainId: 80001,
+      url: process.env.POLYGON_MUMBAI_PROVIDER,
+      accounts: {
+        mnemonic: process.env.MNEMONIC,
+        initialIndex: 0,
+        count: 20,
+        passphrase: "",
+      },
     },
     polygon: {
-      chainId: 4,
+      chainId: 137,
       url: process.env.POLYGON_MAINNET_PROVIDER,
-      accounts: [process.env.DEPLOYER_PRIVATE_KEY || ""],
-    },
-    mumbai: {
-      chainId: 4,
-      url: process.env.POLYGON_MUMBAI_PROVIDER,
-      accounts: [process.env.DEPLOYER_PRIVATE_KEY || ""],
+      accounts: {
+        mnemonic: process.env.MNEMONIC,
+        path: "m/44'/60'/0'/0",
+        initialIndex: 0,
+        count: 20,
+        passphrase: "",
+      },
     },
     optimism: {
-      chainId: 4,
+      chainId: 10,
       url: process.env.OPTIMISM_MAINNET_PROVIDER,
-      accounts: [process.env.DEPLOYER_PRIVATE_KEY || ""],
-    },            
+      accounts: {
+        mnemonic: process.env.MNEMONIC,
+        path: "m/44'/60'/0'/0",
+        initialIndex: 0,
+        count: 20,
+        passphrase: "",
+      },
+    },
+    optimismgoerli: {
+      chainId: 420,
+      url: process.env.OPTIMISM_GOERLI_PROVIDER,
+      accounts: {
+        mnemonic: process.env.MNEMONIC,
+        path: "m/44'/60'/0'/0",
+        initialIndex: 0,
+        count: 20,
+        passphrase: "",
+      },
+    },
+    scroll: { // l2 
+      chainId: 534354,
+      url: process.env.SCROLL_TESTNET_PROVIDER,
+      accounts: {
+        mnemonic: process.env.MNEMONIC,
+        path: "m/44'/60'/0'/0",
+        initialIndex: 0,
+        count: 20,
+        passphrase: "",
+      },
+    },
     hardhat: {
       forking: {
         url: process.env.POLYGON_MUMBAI_PROVIDER ? process.env.POLYGON_MUMBAI_PROVIDER : "",

@@ -20,22 +20,13 @@ describe("PerpetualMotionProtocol", () => {
   let pledger2: SignerWithAddress;
   let pledger3: SignerWithAddress;
   let fundingAddress1: SignerWithAddress;
-  let fundingAddress2: SignerWithAddress;
-  let fundingAddress3: SignerWithAddress;
 
   // Encode Data
   const abiCoder = new ethers.utils.AbiCoder();
 
   beforeEach(async () => {
-    [
-      deployer,
-      pledger1,
-      pledger2,
-      pledger3,
-      fundingAddress1,
-      fundingAddress2,
-      fundingAddress3,
-    ] = await ethers.getSigners();
+    [deployer, pledger1, pledger2, pledger3, fundingAddress1] =
+      await ethers.getSigners();
 
     perpetual = await new PerpetualMotionProtocol__factory(deployer).deploy(); // Perpetual Motion Contract
     votesToken = await new VotesToken__factory(deployer).deploy(
