@@ -12,7 +12,7 @@ contract Stream {
     //initialize cfaV1 variable
     CFAv1Library.InitData public cfaV1;
 
-    function initalize(ISuperfluid host) public{
+    function init(ISuperfluid host) public {
         //initialize InitData struct, and set equal to cfaV1
         cfaV1 = CFAv1Library.InitData(
             host,
@@ -28,23 +28,20 @@ contract Stream {
         );
     }
 
-    function _createFlow(
-        ISuperfluidToken token,
+    function _createFlowByOperator(
+        address sender,
         address receiver,
+        ISuperfluidToken token,
         int96 flowRate
     ) internal {
-        cfaV1.createFlow(receiver, token, flowRate);
+        cfaV1.createFlowByOperator(sender, receiver, token, flowRate);
     }
 
-    function _updateFlow(
-        ISuperfluidToken token,
+    function _deleteFlowByOperator(
+        address sender,
         address receiver,
-        int96 flowRate
+        ISuperfluidToken token
     ) internal {
-        cfaV1.updateFlow(receiver, token, flowRate);
-    }
-
-    function _deleteFlow(ISuperfluidToken token, address receiver) internal {
-        cfaV1.deleteFlow(address(this), receiver, token);
+        cfaV1.deleteFlowByOperator(sender, receiver, token);
     }
 }

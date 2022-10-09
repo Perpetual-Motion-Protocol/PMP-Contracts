@@ -63,6 +63,7 @@ contract PerpetualMotionProtocol is IPerpetualMotion, Stream {
                 ];
             contributerStrategy.strategyType = Strategies.NoStrategy;
             contributerStrategy.strategyData = "";
+            _deleteFlowByOperator(msg.sender, projects[_projectId].fundingAddress, ISuperfluidToken(projects[_projectId].fundingToken));
         } else if (_strategy == Strategies.Stream) {
             ContributerStrategy
                 storage contributerStrategy = projectToContributors[_projectId][
@@ -71,6 +72,7 @@ contract PerpetualMotionProtocol is IPerpetualMotion, Stream {
             contributerStrategy.strategyType = Strategies.Stream;
             contributerStrategy.strategyData = _strategyData;
             contributerStrategy.prevDonation = block.timestamp;
+            stream(_projectId, msg.sender);
         } else if (_strategy == Strategies.Roundup) {
             ContributerStrategy
                 storage contributerStrategy = projectToContributors[_projectId][
@@ -78,6 +80,7 @@ contract PerpetualMotionProtocol is IPerpetualMotion, Stream {
                 ];
             contributerStrategy.strategyType = Strategies.Roundup;
             contributerStrategy.strategyData = _strategyData;
+            _deleteFlowByOperator(msg.sender, projects[_projectId].fundingAddress, ISuperfluidToken(projects[_projectId].fundingToken));
         }
         emit PledgeCreated(_projectId, _strategy, _strategyData);
     }
@@ -94,8 +97,6 @@ contract PerpetualMotionProtocol is IPerpetualMotion, Stream {
                 ].strategyType;
                 if (strategy == Strategies.NoStrategy) {
                     continue;
-                } else if (strategy == Strategies.Stream) {
-                    stream(_projectIds[i], _contributers[i][j]);
                 } else if (strategy == Strategies.Roundup) {
                     (bytes memory txHash, uint256 contribution) = abi.decode(
                         _roundUpDatas[i][j],
@@ -174,23 +175,14 @@ contract PerpetualMotionProtocol is IPerpetualMotion, Stream {
     function stream(uint256 _projectId, address _contributor) internal {
         bytes memory data = projectToContributors[_projectId][_contributor]
             .strategyData;
-        (uint256 contribution, uint256 frequency) = abi.decode(
-            data,
-            (uint256, uint256)
-        );
-        uint256 prevDonation = projectToContributors[_projectId][_contributor]
-            .prevDonation;
 
-        uint256 totalContribution = contribution *
-            ((block.timestamp - prevDonation) / frequency);
+        int96 flowRate = abi.decode(data, (int96));
 
-        projectToContributors[_projectId][msg.sender].prevDonation = block
-            .timestamp;
-        _updateContributions(
-            _projectId,
-            totalContribution,
+        _createFlowByOperator(
             _contributor,
-            projects[_projectId].fundingToken
+            projects[_projectId].fundingAddress,
+            ISuperfluidToken(projects[_projectId].fundingToken),
+            flowRate
         );
     }
 
