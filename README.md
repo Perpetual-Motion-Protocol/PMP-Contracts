@@ -24,7 +24,7 @@ ChainID: 420
 
 ChainID: 534354
 - `PerpetualMotionProtocol`: [`0x70ADbe6E6587A233Cf7DCb0BB88491c3C9f948e9`](https://l2scan.scroll.io/address/0x70ADbe6E6587A233Cf7DCb0BB88491c3C9f948e9)
-- `VotesToken`: [`0x6C5c9115ef9C241Bd0efBA333B873c2E790E90A9`](https://blockscout.com/optimism/goerli/address/0x6C5c9115ef9C241Bd0efBA333B873c2E790E90A9)
+- `VotesToken`: [`0x6C5c9115ef9C241Bd0efBA333B873c2E790E90A9`](https://l2scan.scroll.io/address/0x6C5c9115ef9C241Bd0efBA333B873c2E790E90A9)
 
 ### Polygon
 
