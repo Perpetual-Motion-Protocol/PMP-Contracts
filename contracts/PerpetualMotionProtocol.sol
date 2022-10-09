@@ -3,14 +3,14 @@ pragma solidity ^0.8.9;
 
 import "./interfaces/IPerpetualMotion.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "hardhat/console.sol";
+import "./Stream.sol";
 
 /// @title Perpetual Motion Protocol
 /// @author chris, danceratopz
 /// @notice A protocol that enables contributors to stream donations to
 ///         project creators
 
-contract PerpetualMotionProtocol is IPerpetualMotion {
+contract PerpetualMotionProtocol is IPerpetualMotion, Stream {
     using SafeERC20 for IERC20;
 
     uint256 public projectCounter;
