@@ -136,7 +136,7 @@ const config: HardhatUserConfig = {
       },
     },
     optimism: {
-      chainId: 420,
+      chainId: 10,
       url: process.env.OPTIMISM_MAINNET_PROVIDER,
       accounts: {
         mnemonic: process.env.MNEMONIC,
