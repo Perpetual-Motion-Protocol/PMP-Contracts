@@ -44,6 +44,13 @@ const config: HardhatUserConfig = {
   namedAccounts: {
     deployer: {
       default: 0,
+      mainnet: `privatekey://${process.env.DEPLOYER_PRIVATE_KEY}`,
+      goerli: `privatekey://${process.env.DEPLOYER_PRIVATE_KEY}`,
+      rinkeby: `privatekey://${process.env.DEPLOYER_PRIVATE_KEY}`,
+      polygon_mainnet: `privatekey://${process.env.DEPLOYER_PRIVATE_KEY}`,
+      polygon_mumbai: `privatekey://${process.env.DEPLOYER_PRIVATE_KEY}`,
+      optimism_mainnet: `privatekey://${process.env.DEPLOYER_PRIVATE_KEY}`,
+      optimism_goerli: `privatekey://${process.env.DEPLOYER_PRIVATE_KEY}`
     },
     pledger1: {
       default: 1,
@@ -53,6 +60,7 @@ const config: HardhatUserConfig = {
       polygon_mainnet: `privatekey://${process.env.PLEDGER1_PRIVATE_KEY}`,
       polygon_mumbai: `privatekey://${process.env.PLEDGER1_PRIVATE_KEY}`,
       optimism_mainnet: `privatekey://${process.env.PLEDGER1_PRIVATE_KEY}`,
+      optimism_goerli: `privatekey://${process.env.PLEDGER1_PRIVATE_KEY}`
     },
     pledger2: {
       default: 2,
@@ -62,6 +70,7 @@ const config: HardhatUserConfig = {
       polygon_mainnet: `privatekey://${process.env.PLEDGER2_PRIVATE_KEY}`,
       polygon_mumbai: `privatekey://${process.env.PLEDGER2_PRIVATE_KEY}`,
       optimism_mainnet: `privatekey://${process.env.PLEDGER2_PRIVATE_KEY}`,
+      optimism_goerli: `privatekey://${process.env.PLEDGER2_PRIVATE_KEY}`
     },
     pledger3: {
       default: 3,
@@ -71,6 +80,7 @@ const config: HardhatUserConfig = {
       polygon_mainnet: `privatekey://${process.env.PLEDGER3_PRIVATE_KEY}`,
       polygon_mumbai: `privatekey://${process.env.PLEDGER3_PRIVATE_KEY}`,
       optimism_mainnet: `privatekey://${process.env.PLEDGER3_PRIVATE_KEY}`,
+      optimism_goerli: `privatekey://${process.env.PLEDGER3_PRIVATE_KEY}`
     },
     fundingAddress1: {
       default: 4,
@@ -80,7 +90,8 @@ const config: HardhatUserConfig = {
       polygon_mainnet: `privatekey://${process.env.FUNDINGADDRESS1_PRIVATE_KEY}`,
       polygon_mumbai: `privatekey://${process.env.FUNDINGADDRESS1_PRIVATE_KEY}`,
       optimism_mainnet: `privatekey://${process.env.FUNDINGADDRESS1_PRIVATE_KEY}`,
-    },
+      optimism_goerli: `privatekey://${process.env.FUNDINGADDRESS1_PRIVATE_KEY}`
+    },    
     fundingAddress2: {
       default: 5,
       mainnet: `privatekey://${process.env.FUNDINGADDRESS2_PRIVATE_KEY}`,
@@ -89,7 +100,8 @@ const config: HardhatUserConfig = {
       polygon_mainnet: `privatekey://${process.env.FUNDINGADDRESS2_PRIVATE_KEY}`,
       polygon_mumbai: `privatekey://${process.env.FUNDINGADDRESS2_PRIVATE_KEY}`,
       optimism_mainnet: `privatekey://${process.env.FUNDINGADDRESS2_PRIVATE_KEY}`,
-    },
+      optimism_goerli: `privatekey://${process.env.FUNDINGADDRESS2_PRIVATE_KEY}`
+    },    
     fundingAddress3: {
       default: 6,
       mainnet: `privatekey://${process.env.FUNDINGADDRESS3_PRIVATE_KEY}`,
@@ -98,7 +110,8 @@ const config: HardhatUserConfig = {
       polygon_mainnet: `privatekey://${process.env.FUNDINGADDRESS3_PRIVATE_KEY}`,
       polygon_mumbai: `privatekey://${process.env.FUNDINGADDRESS3_PRIVATE_KEY}`,
       optimism_mainnet: `privatekey://${process.env.FUNDINGADDRESS3_PRIVATE_KEY}`,
-    },
+      optimism_goerli: `privatekey://${process.env.FUNDINGADDRESS3_PRIVATE_KEY}`
+    },    
   },
   networks: {
     mumbai: {
@@ -131,6 +144,18 @@ const config: HardhatUserConfig = {
         initialIndex: 0,
         count: 20,
         passphrase: "",
+      },
+    },
+    optimism_goerli: {
+      chainId: 4,
+      url: process.env.OPTIMISM_GOERLI_PROVIDER,
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY || ""],
+    },            
+    hardhat: {
+      forking: {
+        url: process.env.POLYGON_MUMBAI_PROVIDER ? process.env.POLYGON_MUMBAI_PROVIDER : "",
+        blockNumber: 28516994,  // Polygon Mumbai
+        // blockNumber: 34100359, // Polygon Mainnet.
       },
     },
   },
